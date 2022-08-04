@@ -1,18 +1,19 @@
+import os
+
+from requests import Response, exceptions, get, post
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_container_is_ready
-from requests import get, post, Response
-import os
 
 
 class KeycloakContainer(DockerContainer):
-    def __init__(self, image="jboss/keycloak:4.1.0.Final", port_to_expose=8080):
+    def __init__(self, image="jboss/keycloak:16.1.1", port_to_expose=8080):
         super(KeycloakContainer, self).__init__(image)
         self.port_to_expose = port_to_expose
         self.with_exposed_ports(self.port_to_expose).with_env(
             "KEYCLOAK_PASSWORD", "admin"
         ).with_env("KEYCLOAK_USER", "admin")
 
-    @wait_container_is_ready()
+    @wait_container_is_ready(exceptions.ConnectionError)
     def _connect(self):
         print(f"Connecting to keycloak on {self.get_url()}")
         res: Response = get(self.get_url())
